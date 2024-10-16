@@ -1,0 +1,75 @@
+﻿@page "/Plataformas"
+@rendermode InteractiveServer
+<PageTitle>Plataformas</PageTitle>
+
+<h3 class="text-center mb-2">Plataformas registrados</h3>
+<div class="text-center mb-4">
+    <button class="btn btn-primary mb-2" @onclick = "agregarPlataforma">Agregar Plataforma</button>
+</div>
+
+<table class="table table-hover table-striped table-bordered">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">Plataforma</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in plataformas)
+        {
+            <tr>
+                <td>@item.Nombre</td>
+                <td>@item.Estado</td>
+                <td>
+                    <button type="button" class="btn btn-success mb-2" @onclick="() => editarPlataforma(item.Id)">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button type="button" class="btn btn-danger" @onclick="() => eliminarPlataforma(item.Id)">Eliminar</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code
+{
+    [Parameter] public int id {get;set;}
+    Plataformas plataforma = new Plataformas();
+    List<Plataformas> plataformas = new List<Plataformas>();
+    private void agregarPlataforma()
+    {
+        NavMan.NavigateTo("/Registro");
+    }
+
+    private void editarPlataforma(int id){
+        NavMan.NavigateTo($"/Registro/{id}/editar");
+
+    }
+    private async Task eliminarPlataforma(int id)
+    {
+        var plataformaEliminar = await Bd.PlataformaContext.FirstOrDefaultAsync(p => p.Id == id);
+
+        if (plataformaEliminar != null)
+        {
+            Bd.PlataformaContext.Remove(plataformaEliminar);
+            await Bd.SaveChangesAsync(); 
+            plataformas.Remove(plataformaEliminar);
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        plataformas = await Bd.PlataformaContext.ToListAsync();
+    }
+
+    private async Task GuardarPlataforma()
+    {
+        Bd.PlataformaContext.Add(plataforma);
+        await Bd.SaveChangesAsync();
+        plataformas = await Bd.PlataformaContext.ToListAsync();  
+        plataforma = new Plataformas();
+    }
+}
+

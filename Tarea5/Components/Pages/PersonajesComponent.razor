@@ -1,0 +1,80 @@
+﻿@page "/Personajes"
+@rendermode InteractiveServer
+<PageTitle>Personajes</PageTitle>
+
+<h3 class="text-center mb-2">Personajes registrados</h3>
+<div class="text-center mb-4">
+    <button class="btn btn-primary" @onclick = "agregarPersonaje">Agregar Registro</button>
+</div>
+
+<table class="table table-hover table-striped table-bordered">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Alias</th>
+            <th scope="col">Rol</th>
+            <th scope="col">Habilidad</th>
+            <th scope="col">Arma</th>
+            <th scope="col">Nivel de poder</th>
+            <th scope="col">Imagen</th>
+            <th scope="col">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in personajes)
+        {
+            <tr>
+                <td>@item.Nombre</td>
+                <td>@item.Alias</td>
+                <td>@item.Rol</td>
+                <td>@item.Habilidad</td>
+                <td>@item.Arma</td>
+                <td>@item.NivelPoder</td>
+                <td>
+                    <img src="@item.ImagenPortada" alt="@item.Nombre" class="img-thumbnail rounded-circle" width="100">
+                </td>
+                <td>
+                    <button type="button" class="btn btn-success mb-2" @onclick="() => editarPersonaje(item.Id)">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button type="button" class="btn btn-danger" @onclick="() => eliminarPersonaje(item.Id)">eliminar</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code
+{
+    [Parameter] public int id {get;set;}
+    List<Personajes> personajes = new List<Personajes>();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        personajes = await Bd.PersonajeContext.ToListAsync();
+    }
+
+    private void agregarPersonaje()
+    {
+        NavMan.NavigateTo("/RegistroPersonajes");
+    }
+
+    private void editarPersonaje(int id)
+    {
+        NavMan.NavigateTo($"/RegistroPersonajes/{id}/editar");
+    }
+
+    private async Task eliminarPersonaje(int id)
+    {
+        var personajeEliminar = await Bd.PersonajeContext.FirstOrDefaultAsync(p => p.Id == id);
+
+        if (personajeEliminar != null)
+        {
+            Bd.PersonajeContext.Remove(personajeEliminar);
+            await Bd.SaveChangesAsync(); 
+            personajes.Remove(personajeEliminar);
+            StateHasChanged();
+        }
+    }
+}
+

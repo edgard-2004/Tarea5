@@ -1,0 +1,188 @@
+@page "/Registro"
+@page "/Registro/{id:int}/editar"
+@rendermode InteractiveServer
+<PageTitle>Registro</PageTitle>
+<EditForm Model="videoJuegos" OnValidSubmit="guardarVideoJuego">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="alert alert-danger" />
+
+    <div class="container mt-5">
+        <h3 class="text-center mb-4 text-white">Registro de Videojuegos</h3>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <InputText id="Nombre" class="form-control" @bind-Value="videoJuegos.Nombre" placeholder="Nombre del videojuego" />
+                    <label for="Nombre">Nombre</label>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <InputText id="Desarrollador" class="form-control" @bind-Value="videoJuegos.Desarrollador" placeholder="Desarrollador" />
+                    <label for="Desarrollador">Desarrollador</label>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <InputSelect class="form-select" @bind-Value="videoJuegos.Plataforma" id="Plataforma" aria-label="Selecciona la plataforma">
+                        <option value="">Selecciona una plataforma</option>
+                        @foreach (var plataforma in plataformas)
+                        {
+                            <option value="@plataforma.Nombre">@plataforma.Nombre</option>
+                        }
+                    </InputSelect>
+                    <label for="Plataforma">Plataforma</label>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <InputText id="Genero" class="form-control" @bind-Value="videoJuegos.Genero" placeholder="Género del videojuego" />
+                    <label for="Genero">Género</label>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <InputDate id="FechaLanzamiento" class="form-control" @bind-Value="videoJuegos.FechaLanzamiento" placeholder="Fecha de Lanzamiento" />
+                    <label for="FechaLanzamiento">Fecha de Lanzamiento</label>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <InputText type="url" id="ImagenPortada" @bind-Value="videoJuegos.ImagenPortada" class="form-control" placeholder="URL de la Imagen" />
+                    <label for="ImagenPortada">Imagen Portada (URL)</label>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="form-floating">
+                    <InputTextArea id="Descripcion" @bind-Value="videoJuegos.Descripcion" class="form-control" rows="4" placeholder="Descripción del videojuego"></InputTextArea>
+                    <label for="Descripcion">Descripción</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="container mt-5">
+        <h3 class="text-center mb-4 text-white">Registro de Plataformas</h3>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <InputText id="Plataforma" class="form-control" @bind-Value="plataforma.Nombre" placeholder="Nombre de la plataforma" />
+                    <label for="Plataforma">Plataforma</label>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <InputSelect class="form-select" @bind-Value="plataforma.Estado" id="Estado" aria-label="Selecciona el estado plataforma">
+                        <option value="">Selecciona el estado</option>
+                        @foreach (var plataforma in estadoPlataforma)
+                        {
+                            <option value="@plataforma.Estado">@plataforma.Estado</option>
+                        }
+                    </InputSelect>
+                    <label for="Plataforma">Plataforma</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-3 mt-4">
+            <button type="button" class="btn btn-success" @onclick="agregarPlataforma">Agregar Plataforma</button>
+        </div>
+
+        <div class="text-center mt-2">
+            <button type="submit" class="btn btn-primary px-5 shadow" style="color: white; background-color: #e43535;">Guardar VideoJuego</button>
+        </div>
+    </div>
+    </div>
+
+
+</EditForm>
+
+
+@code
+{
+        [Parameter] public int? id {get;set;}
+        Plataformas plataforma = new Plataformas();
+        VideoJuegos videoJuegos = new VideoJuegos();
+        List<Plataformas> estadoPlataforma = new List<Plataformas>
+        {
+            new Plataformas {Estado = "Activa"},
+            new Plataformas {Estado = "Desactivada"}
+        };
+        List<Plataformas> plataformas = new List<Plataformas>
+        {
+            new Plataformas {Nombre = "PC"},
+            new Plataformas {Nombre = "Xbox Series X/S"},
+            new Plataformas {Nombre = "Xbox One"},
+            new Plataformas {Nombre = "PlayStation 5"},
+            new Plataformas {Nombre = "Playstation 4"},
+            new Plataformas {Nombre = "Nintendo Switch"},
+            new Plataformas {Nombre = "Mobile"},
+            new Plataformas {Nombre = "Steam"},
+            new Plataformas {Nombre = "Epic Games Store"},
+            new Plataformas {Nombre = "Todas las plataformas"}
+        };
+
+        protected async Task guardarVideoJuego()
+        {
+            if(videoJuegos.Id >0 )
+            {
+                Bd.VideoJuegoContext.Update(videoJuegos);
+            }
+            else
+            {
+            videoJuegos.FechaLanzamiento = videoJuegos.FechaLanzamiento.Date;
+            Bd.VideoJuegoContext.Add(videoJuegos);
+        
+            }
+
+            await Bd.SaveChangesAsync();
+            await JSx.InvokeVoidAsync("alert", "VideoJuego guardado exitosamente");
+            NavMan.NavigateTo("/VideoJuegos");
+        }
+
+        private async Task agregarPlataforma()
+        {
+            if (plataforma.Id > 0)
+            {
+                Bd.PlataformaContext.Update(plataforma);
+            }
+            else
+            {
+                Bd.PlataformaContext.Add(plataforma);
+            }
+            await Bd.SaveChangesAsync();
+            plataformas.AddRange(await Bd.PlataformaContext.ToListAsync());
+            await JSx.InvokeVoidAsync("alert", "Plataforma guardada exitosamente");
+            plataforma = new Plataformas(); 
+            NavMan.NavigateTo("/Plataformas");
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+            var plataformasDb = await Bd.PlataformaContext.ToListAsync();
+            plataformas.AddRange(plataformasDb);
+        }
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                if (id.HasValue && id > 0)
+                {
+                    plataforma = await Bd.PlataformaContext.FirstOrDefaultAsync(x => x.Id == id) ?? new Plataformas();
+                    videoJuegos = await Bd.VideoJuegoContext.FirstOrDefaultAsync(x => x.Id == id) ?? new VideoJuegos();
+                    StateHasChanged();
+                }
+            }
+        }
+}
+<style>
+    body{
+        background-color: #2c3e50;
+    }
+</style>
